@@ -6,8 +6,9 @@ const authorPlayer = $(".media-author");
 const audio = $("#audio");
 const togglePlay = $(".toggle-play");
 const progress = $(".process-bar");
-const nextSong = $(".forward-icon");
+const randomSong = $(".random-icon");
 const backSong = $(".backward-icon");
+const nextSong = $(".forward-icon");
 const app = {
     currentIndex: 0,
     isPlay: false,
@@ -203,13 +204,29 @@ const app = {
         imgPlayer.src = `${this.currentSong.images[0].url}`;
         namePlayer.textContent = this.currentSong.name;
         authorPlayer.textContent = this.currentSong.author;
-        // set up lại trạng thái ban đầu cho Song
+        // set up lại thanh process ban đầu cho Song
         progress.value = 0;
     },
     formatTimer: function (number) {
         const minutes = Math.floor(number / 60);
         const seconds = Math.floor(number % 60);
         return `${minutes < 10 ? "0" + minutes : minutes}:${seconds < 10 ? "0" + seconds : seconds}`;
+    },
+    nextSong: function () {
+        if (app.currentIndex == app.songs.length - 1) {
+            app.currentIndex = 0;
+        } else {
+            app.currentIndex++;
+        }
+        app.uploadCurrentSong();
+    },
+    backSong: function () {
+        if (app.currentIndex == 0) {
+            app.currentIndex = app.songs.length - 1;
+        } else {
+            app.currentIndex--;
+        }
+        app.uploadCurrentSong();
     },
     handleEvents: function () {
         // START handleClickPlay
@@ -234,8 +251,6 @@ const app = {
         audio.onplay = function () {
             app.isPlay = true;
             $(".wrapper").classList.add("playing");
-            //Set time-end song music
-            $(".time-end").textContent = app.formatTimer(audio.duration);
         };
         audio.onpause = function () {
             app.isPlay = false;
@@ -244,21 +259,12 @@ const app = {
 
         // START handleClickNext
         nextSong.onclick = function () {
-            if (app.currentIndex == app.songs.length - 1) {
-                app.currentIndex = 0;
-            } else {
-                app.currentIndex++;
-            }
-            app.uploadCurrentSong();
+            app.nextSong();
             audio.play();
         };
+        // START handleClickBack
         backSong.onclick = function () {
-            if (app.currentIndex == 0) {
-                app.currentIndex = app.songs.length - 1;
-            } else {
-                app.currentIndex--;
-            }
-            app.uploadCurrentSong();
+            app.backSong();
             audio.play();
         };
         // Handle khi tiến độ bài hát thay đổi
@@ -266,16 +272,18 @@ const app = {
             if (audio.duration) {
                 const currentPercent = Math.floor((audio.currentTime / audio.duration) * 100);
                 progress.textContent = `${currentPercent}`;
-                // Set time-start song music
-                $(".time-start").textContent = app.formatTimer(audio.currentTime);
                 progress.value = audio.currentTime;
                 progress.max = audio.duration;
+                //Set time-end song music
+                $(".time-end").textContent = app.formatTimer(audio.duration);
+                $(".time-start").textContent = app.formatTimer(audio.currentTime);
             }
         };
         // Handle khi tua bài hát
-        progress.onchange = function (e) {
+        progress.onchange = ()=> {
             audio.currentTime = progress.value;
         };
+
     },
 
     start: function () {
