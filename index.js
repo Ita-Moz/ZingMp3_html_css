@@ -6,12 +6,16 @@ const authorPlayer = $(".media-author");
 const audio = $("#audio");
 const togglePlay = $(".toggle-play");
 const progress = $(".process-bar");
-const randomSong = $(".random-icon");
-const backSong = $(".backward-icon");
-const nextSong = $(".forward-icon");
+const randomBtn = $(".random-icon");
+const backBtn = $(".backward-icon");
+const nextBtn = $(".forward-icon");
+const repeatBtn = $(".repeat-icon");
+let listSongOld = [];
 const app = {
     currentIndex: 0,
     isPlay: false,
+    isRandom: false,
+    isRepeat: false,
     songs: [
         {
             name: "Sing me to sleep",
@@ -169,9 +173,9 @@ const app = {
         },
     ],
     render: function () {
-        const htmls = this.songs.map((song) => {
+        const htmls = this.songs.map((song, index) => {
             return `
-            <li class="music-list-item">
+            <li class="music-list-item ${index == app.currentIndex ? "active-bg" : ""}" data-index=${index}>
             <div class="music-song-left">
             <div style="background-image: url('${song.images[0].url}');" class="music-song-left-img">
             </div>
@@ -228,8 +232,23 @@ const app = {
         }
         app.uploadCurrentSong();
     },
+    randomSong: function () {
+        let randomNew;
+        do {
+            randomNew = Math.floor(Math.random() * app.songs.length);
+        } while (listSongOld.includes(randomNew) == true && listSongOld.length < app.songs.length);
+
+        if (listSongOld.includes(randomNew) == false) {
+            listSongOld.push(randomNew);
+        } else if (listSongOld.length >= app.songs.length) {
+            listSongOld = [];
+        }
+        console.log(randomNew, listSongOld);
+        app.currentIndex = randomNew;
+        app.uploadCurrentSong();
+    },
     handleEvents: function () {
-        // START handleClickPlay
+        // HandleClickPlay
         togglePlay.onclick = function () {
             if (app.isPlay) {
                 audio.pause();
@@ -248,6 +267,7 @@ const app = {
                 }
             }
         });
+        // Lắng nghe sự kiện
         audio.onplay = function () {
             app.isPlay = true;
             $(".wrapper").classList.add("playing");
@@ -256,16 +276,40 @@ const app = {
             app.isPlay = false;
             $(".wrapper").classList.remove("playing");
         };
-
-        // START handleClickNext
-        nextSong.onclick = function () {
-            app.nextSong();
+        audio.onended = function () {
+            if (app.isRepeat == true) {
+                audio.play();
+            } else {
+                nextBtn.click();
+            }
+        };
+        //HandleClickNext
+        nextBtn.onclick = function () {
+            if (app.isRandom == true) {
+                app.randomSong();
+            } else {
+                app.nextSong();
+            }
             audio.play();
         };
-        // START handleClickBack
-        backSong.onclick = function () {
-            app.backSong();
+        //HandleClickBack
+        backBtn.onclick = function () {
+            if (app.isRandom == true) {
+                app.randomSong();
+            } else {
+                app.backSong();
+            }
             audio.play();
+        };
+        // Handle khi nhấn vào nút random
+        randomBtn.onclick = function () {
+            app.isRandom = !app.isRandom;
+            randomBtn.classList.toggle("active-btn", app.isRandom);
+        };
+        // Handle khi nhấn vào nút repeat
+        repeatBtn.onclick = function () {
+            app.isRepeat = !app.isRepeat;
+            repeatBtn.classList.toggle("active-btn", app.isRepeat);
         };
         // Handle khi tiến độ bài hát thay đổi
         audio.ontimeupdate = function () {
@@ -280,18 +324,28 @@ const app = {
             }
         };
         // Handle khi tua bài hát
-        progress.onchange = ()=> {
+        progress.onchange = () => {
             audio.currentTime = progress.value;
         };
-
+        // Click vào element của class .music-list-item để chọn bài hát
+        $(".music-list").onclick = function (e) {
+            // kiểm tra thành phần có phải là thẻ li hay không
+            const elementClick = e.target.closest(".music-list-item:not(.active-bg)");
+            if (elementClick) {
+                const dataIndex = elementClick.getAttribute("data-index");
+                app.currentIndex = Number(dataIndex);
+                elementClick.classList.add('active-bg');
+                app.uploadCurrentSong();
+                audio.play();
+            }
+        };
+        // Tô màu background vào bài nhạc đang phát
     },
 
     start: function () {
         // Định nghĩa thuộc tính currentSong cho Object
         this.defineProperties();
-
         this.handleEvents();
-
         this.uploadCurrentSong();
         // Render ra list bai hat
         this.render();

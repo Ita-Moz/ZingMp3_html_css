@@ -566,6 +566,9 @@ ul {
     color: gray;
 }
 
+.media-icon,.icon-control,.player-icon:hover{
+    cursor: pointer;
+}
 .media-icon {
     font-size: 1.6rem;
     padding: 0 1rem;
@@ -653,8 +656,13 @@ ul {
 
 
 
-
-
+/* active-btn */
+.active-btn{
+    color: var(--text-hover);
+}
+.active-bg{
+    background-color: var(--border-player);
+}
 /* active item choose */
 .sidebar-active-item {
     border-left: 3px solid var(--primary-btn);
