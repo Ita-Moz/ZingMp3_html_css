@@ -1,4 +1,4 @@
-# Zing Mp3 Clone
+# Zing Mp3 Clone ✍️
 ## Demo: https://zingmp3-ita.netlify.app/
 ---Một số chức năng chính---
 * Play ,Next, Prev, Repeat, Random bài nhạc
