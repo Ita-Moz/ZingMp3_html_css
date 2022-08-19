@@ -662,6 +662,7 @@ ul {
 }
 .active-bg{
     background-color: var(--border-player);
+    cursor: pointer;
 }
 /* active item choose */
 .sidebar-active-item {

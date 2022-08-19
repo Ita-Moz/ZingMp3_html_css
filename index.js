@@ -10,6 +10,7 @@ const randomBtn = $(".random-icon");
 const backBtn = $(".backward-icon");
 const nextBtn = $(".forward-icon");
 const repeatBtn = $(".repeat-icon");
+const tab = $$('.js-pages')
 let listSongOld = [];
 const app = {
     currentIndex: 0,
@@ -243,9 +244,16 @@ const app = {
         } else if (listSongOld.length >= app.songs.length) {
             listSongOld = [];
         }
-        console.log(randomNew, listSongOld);
         app.currentIndex = randomNew;
         app.uploadCurrentSong();
+    },
+    scrollToActiveSong: function () {
+        setTimeout(() => {
+            $(".active-bg").scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+            });
+        }, 300);
     },
     handleEvents: function () {
         // HandleClickPlay
@@ -290,6 +298,9 @@ const app = {
             } else {
                 app.nextSong();
             }
+            // Khi active-bg bị khuất thì đưa lên trên
+            app.scrollToActiveSong();
+            app.render();
             audio.play();
         };
         //HandleClickBack
@@ -299,6 +310,9 @@ const app = {
             } else {
                 app.backSong();
             }
+            // Khi active-bg bị khuất thì đưa lên trên
+            app.scrollToActiveSong();
+            app.render();
             audio.play();
         };
         // Handle khi nhấn vào nút random
@@ -334,17 +348,30 @@ const app = {
             if (elementClick) {
                 const dataIndex = elementClick.getAttribute("data-index");
                 app.currentIndex = Number(dataIndex);
-                elementClick.classList.add('active-bg');
+                elementClick.classList.add("active-bg");
                 app.uploadCurrentSong();
+                app.render();
                 audio.play();
             }
         };
         // Tô màu background vào bài nhạc đang phát
     },
-
+    handleEventsUI: function () {
+        // Chuyển tabs page Cá Nhân, Khám phá, ZingChart
+        $$('.js-tabs').forEach((element, index) => {
+            element.onclick = function() {
+                $('.js-tabs.sidebar-active-item').classList.remove('sidebar-active-item');
+                element.classList.add('sidebar-active-item');
+                tab[0].style.display = "none";
+                tab[1].style.display = "none";
+                tab[index].style.display = "block";
+            }
+        })
+    },
     start: function () {
         // Định nghĩa thuộc tính currentSong cho Object
         this.defineProperties();
+        this.handleEventsUI();
         this.handleEvents();
         this.uploadCurrentSong();
         // Render ra list bai hat
