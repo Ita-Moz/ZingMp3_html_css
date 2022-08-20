@@ -10,13 +10,24 @@ const randomBtn = $(".random-icon");
 const backBtn = $(".backward-icon");
 const nextBtn = $(".forward-icon");
 const repeatBtn = $(".repeat-icon");
-const tab = $$('.js-pages')
+const tab = $$(".js-pages");
 let listSongOld = [];
+const PLAYER_STORAGE_KEY = "player";
 const app = {
     currentIndex: 0,
     isPlay: false,
     isRandom: false,
     isRepeat: false,
+    config: JSON.parse(localStorage.getItem(PLAYER_STORAGE_KEY)) || {},
+    loadConfig: function () {
+        app.currentIndex = app.config.current || 0;
+        app.isRandom = app.config.isRandom;
+        app.isRepeat = app.config.isRepeat;
+    },
+    setConfig: function (key, value) {
+        this.config[key] = value;
+        localStorage.setItem(PLAYER_STORAGE_KEY, JSON.stringify(this.config));
+    },
     songs: [
         {
             name: "Sing me to sleep",
@@ -298,6 +309,7 @@ const app = {
             } else {
                 app.nextSong();
             }
+            app.setConfig('current',app.currentIndex)
             // Khi active-bg bị khuất thì đưa lên trên
             app.scrollToActiveSong();
             app.render();
@@ -310,6 +322,7 @@ const app = {
             } else {
                 app.backSong();
             }
+            app.setConfig('current',app.currentIndex)
             // Khi active-bg bị khuất thì đưa lên trên
             app.scrollToActiveSong();
             app.render();
@@ -319,11 +332,13 @@ const app = {
         randomBtn.onclick = function () {
             app.isRandom = !app.isRandom;
             randomBtn.classList.toggle("active-btn", app.isRandom);
+            app.setConfig("isRandom", app.isRandom);
         };
         // Handle khi nhấn vào nút repeat
         repeatBtn.onclick = function () {
             app.isRepeat = !app.isRepeat;
             repeatBtn.classList.toggle("active-btn", app.isRepeat);
+            app.setConfig("isRepeat", app.isRepeat);
         };
         // Handle khi tiến độ bài hát thay đổi
         audio.ontimeupdate = function () {
@@ -348,6 +363,7 @@ const app = {
             if (elementClick) {
                 const dataIndex = elementClick.getAttribute("data-index");
                 app.currentIndex = Number(dataIndex);
+                app.setConfig('current',app.currentIndex)
                 elementClick.classList.add("active-bg");
                 app.uploadCurrentSong();
                 app.render();
@@ -358,24 +374,27 @@ const app = {
     },
     handleEventsUI: function () {
         // Chuyển tabs page Cá Nhân, Khám phá, ZingChart
-        $$('.js-tabs').forEach((element, index) => {
-            element.onclick = function() {
-                $('.js-tabs.sidebar-active-item').classList.remove('sidebar-active-item');
-                element.classList.add('sidebar-active-item');
+        $$(".js-tabs").forEach((element, index) => {
+            element.onclick = function () {
+                $(".js-tabs.sidebar-active-item").classList.remove("sidebar-active-item");
+                element.classList.add("sidebar-active-item");
                 tab[0].style.display = "none";
                 tab[1].style.display = "none";
                 tab[index].style.display = "block";
-            }
-        })
+            };
+        });
     },
     start: function () {
         // Định nghĩa thuộc tính currentSong cho Object
         this.defineProperties();
+        this.loadConfig();
         this.handleEventsUI();
         this.handleEvents();
         this.uploadCurrentSong();
         // Render ra list bai hat
         this.render();
+        randomBtn.classList.toggle("active-btn", app.isRandom);
+        repeatBtn.classList.toggle("active-btn", app.isRepeat);
     },
 };
 app.start();
